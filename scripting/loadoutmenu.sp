@@ -42,16 +42,24 @@ public Action Timer_ApplyPistol(Handle timer, any client)
 
     int weapon = GetPlayerWeaponSlot(client, 1);
 
-    if (weapon != -1)
+    if (weapon == -1)
+        return Plugin_Stop;
+
+    char classname[64];
+    GetEntityClassname(weapon, classname, sizeof(classname));
+
+ 
+    if (StrEqual(classname, "weapon_hkp2000"))
     {
-        RemovePlayerItem(client, weapon);
-        AcceptEntityInput(weapon, "Kill");
+        if (g_CT_Pistol[client] == 0) // USP выбран
+        {
+            RemovePlayerItem(client, weapon);
+            AcceptEntityInput(weapon, "Kill");
+
+            GivePlayerItem(client, "weapon_usp_silencer");
+        }
     }
 
-    if (g_CT_Pistol[client] == 0)
-        GivePlayerItem(client, "weapon_usp_silencer");
-    else
-        GivePlayerItem(client, "weapon_hkp2000");
 
     return Plugin_Stop;
 }
@@ -69,7 +77,7 @@ public void OnWeaponEquip(int client, int weapon)
 
     if (StrEqual(classname, "weapon_m4a1"))
     {
-        if (g_CT_Rifle[client] == 0) // M4A1-S selected
+        if (g_CT_Rifle[client] == 0) // M4A1-S выбран
         {
             RemovePlayerItem(client, weapon);
             AcceptEntityInput(weapon, "Kill");
@@ -82,8 +90,8 @@ public void OnWeaponEquip(int client, int weapon)
 public Action Command_Loadout(int client, int args)
 {
     Menu menu = new Menu(Menu_Loadout);
-    menu.SetTitle("CT Loadout");
 
+    menu.SetTitle("CT Loadout");
     menu.AddItem("pistol", "Choose CT Pistol");
     menu.AddItem("rifle", "Choose CT Rifle");
 
@@ -114,7 +122,6 @@ void ShowPistolMenu(int client)
     Menu menu = new Menu(Menu_Pistol);
 
     menu.SetTitle("Choose CT Pistol");
-
     menu.AddItem("usp", "USP-S");
     menu.AddItem("p2000", "P2000");
 
@@ -126,7 +133,6 @@ public int Menu_Pistol(Menu menu, MenuAction action, int client, int item)
     if (action == MenuAction_Select)
     {
         g_CT_Pistol[client] = item;
-
         PrintToChat(client, "[Loadout] CT pistol saved.");
     }
 
@@ -138,7 +144,6 @@ void ShowRifleMenu(int client)
     Menu menu = new Menu(Menu_Rifle);
 
     menu.SetTitle("Choose CT Rifle");
-
     menu.AddItem("m4a1s", "M4A1-S");
     menu.AddItem("m4a4", "M4A4");
 
@@ -150,7 +155,6 @@ public int Menu_Rifle(Menu menu, MenuAction action, int client, int item)
     if (action == MenuAction_Select)
     {
         g_CT_Rifle[client] = item;
-
         PrintToChat(client, "[Loadout] CT rifle saved.");
     }
 
